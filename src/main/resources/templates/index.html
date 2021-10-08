@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>게시판</title>
+    <meta charset="UTF-8">
+    <link rel='stylesheet' href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="/webjars/jquery/3.5.1/jquery.min.js"></script>
+    <script src="/webjars/bootstrap/3.4.1/js/bootstrap.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<body>
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <a href="/" class="navbar-brand">
+            <strong>게시판</strong>
+        </a>
+    </div>
+    <div id="header-title-login-user">
+        <span th:if="${username} != 'null'" th:text="${username}+'님 환영합니다.'"
+              style="color: black;margin-right: 30px"></span>
+    </div>
+
+    <a th:if="${username} == 'null'" id="login-text" href="/user/login"
+       style="float: right;color: black;margin-right: 15px">
+        로그인
+    </a>
+    <a th:if="${username} != 'null'" id="logout-text" href="/user/logout"
+       style="float: right;color: black;margin-right: 15px">
+        로그아웃
+    </a>
+</nav>
+
+<div class="container">
+    <table class="table">
+        <thead class="thead-light">
+        <tr class="text-center">
+            <th scope="col">번호</th>
+            <th scope="col">제목</th>
+            <th scope="col">작성자</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr class="text-center" th:each="board : ${boardList}">
+            <th scope="row">
+                <span th:text="${board.idx}"></span>
+            </th>
+            <th>
+                <a th:href="@{'board/' + ${board.idx}}">
+                    <span th:text="${board.title}"></span>
+                </a>
+            </th>
+            <th>
+                <span th:text="${board.username}"></span>
+            </th>
+        </tr>
+        </tbody>
+    </table>
+    <br/>
+
+
+    <nav aria-label="Page navigation example" style="text-align:center">
+        <ul class="pagination justify-content-center" th:with="startNumber=${T(Math).floor(boardList.number/10)}*10+1,
+    endNumber=(${boardList.totalPages} > ${startNumber}+9) ? ${startNumber}+9 : ${boardList.totalPages}">
+            <li class="page-item"><a aria-label="Previous" href="/?page=1">Previous</a></li>
+            <li class="page-item" th:style="${boardList.first} ? 'display:none'">
+                <a th:href="@{/(page=${boardList.number})}"></a>
+            </li>
+            <li class="page-item" th:each="page :${#numbers.sequence(startNumber, endNumber)}"
+                th:class="(${page} == ${boardList.number}+1) ? 'active'">
+                <a th:href="@{/(page=${page})}" th:text="${page}"><span class="sr-only"></span></a>
+            </li>
+
+            <li class="page-item" th:style="${boardList.last} ? 'display:none'">
+                <a th:href="@{/(page=${boardList.number}+2)}"></a>
+            </li>
+            <li class="page-item"><a aria-label="Next" th:href="@{/(page=${boardList.totalPages})}">Next</a></li>
+        </ul>
+    </nav>
+
+    <div class="row">
+        <div class="col-auto mr-auto"></div>
+        <div class="col-auto">
+            <a class="btn btn-primary" th:href="@{/board/post}" role="button">글쓰기</a>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

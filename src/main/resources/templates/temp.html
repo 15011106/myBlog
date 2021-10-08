@@ -1,0 +1,14 @@
+
+<div th:each="comment : ${comment}" class="panel panel-default" id = commentPanel>
+    <div class="panel-heading">
+        <h3 class="panel-title">작성자 : <span th:text="${comment.user.username}"></span> </h3>
+    </div>
+    <div class="panel-body">
+        댓글 : <span th:id="${comment.id}+text" th:text="${comment.text}"></span>
+    </div>
+    <button th:if="${comment.user.username} == ${username}" th:id="${comment.id}+editComment" class="btn btn-primary" th:onclick=editPost([[${comment.id}]]) >수정</button>
+    <form th:if="${comment.user.username} == ${username}" action="#" th:action="@{/board/}+${board.idx}+@{/comment/}+${comment.id}" method="post" th:onsubmit="return removecheck([[${comment.id}]])" style="display: inline">
+        <input type="submit" th:id="${comment.id}+removeComment" class="btn btn-primary" value="삭제" >
+        <input type="hidden" name="_method" value="delete"/>
+    </form>
+</div>

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>게시글 상세정보</title>
+    <meta charset="UTF-8">
+    <link rel='stylesheet' href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <script src="/webjars/jquery/3.5.1/jquery.min.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+</head>
+<style>
+    #commentwrite{
+        width:1000px;
+        margin: auto;
+
+    }
+    #writeButton{
+        margin-left: 460px;
+    }
+    #boardPannel{
+        width: 500px;
+        height: 500px;
+        margin: auto;
+    }
+    #commentPanel{
+        width:1000px;
+        margin: auto;
+    }
+    #editButton{
+        display: inline-block;
+        margin: 300px auto 5px 300px;
+
+    }
+    #deleteButton{
+        display: inline-block;
+        margin: 300px auto 5px auto;
+
+    }
+</style>
+<script>
+    $(document).ready(function(){
+        var user = '[[${username}]]'
+        var boarduser = '[[${board.username}]]'
+        if(user == 'null'){
+        }else{
+
+            if(user == boarduser){
+                $(`#boardeditor`).show();
+            }
+
+        }
+    });
+
+    function check1(){
+        var user = '[[${username}]]'
+        console.log(user)
+        var txt =document.getElementById('txt').value;
+        if(txt == ""){
+            alert("댓글을 입력해주세요.");
+            event.preventDefault();
+            return false;
+        }
+        if (user == 'null'){
+            alert("로그인을 해야합니다.");
+            window.location.replace('/user/login');
+            event.preventDefault();
+            return false
+        }
+        return true;
+    }
+
+    function check2(id){
+
+        var txt =document.getElementById(id+'editinput').value;
+        if(txt === ""){
+            alert("댓글을 입력해주세요.");
+            return false;
+        }
+        return true;
+    }
+
+    function removecheck(id){
+        if(confirm("정말로 삭제하시겠습니까?")){
+            return true;
+        }else{
+            return false;
+        }
+
+    }
+    function editPost(id){
+        $(`#${id}editdiv`).show();
+        $(`#${id}submit`).show();
+        $(`#${id}text`).hide();
+        $(`#${id}removeComment`).hide();
+        $(`#${id}editComment`).hide();
+        let text = $(`#${id}text`).text();
+        $(`#${id}editinput`).val(text);
+    }
+
+    function returnPost(id){
+        $(`#${id}editdiv`).hide();
+        $(`#${id}submit`).hide();
+
+        $(`#${id}text`).show();
+        $(`#${id}removeComment`).show();
+        $(`#${id}editComment`).show();
+    }
+
+</script>
+<body>
+<nav class="navbar navbar-default">
+    <div class="container-fluid">
+        <a href="/" class="navbar-brand">
+            <strong>게시판</strong>
+        </a>
+    </div>
+    <div id="header-title-login-user">
+        <span th:if="${username} != 'null'" th:text="${username}+'님 환영합니다.'"
+              style="color: black;margin-right: 30px"></span>
+    </div>
+    <a th:if="${username} == 'null'" id="login-text" href="/user/login"
+       style="float: right;color: black;margin-right: 15px">
+        로그인
+    </a>
+    <a th:if="${username} != 'null'" id="logout-text" href="/user/logout"
+       style="float: right;color: black;margin-right: 15px">
+        로그아웃
+    </a>
+</nav>
+
+
+<div class="panel panel-default" id ="boardPannel">
+    <!-- Default panel contents -->
+    <div class="panel-heading"></div>
+    <!-- List group -->
+    <ul class="list-group">
+        <li class="list-group-item">작성자 : <span th:text="${board.username}"></span></li>
+        <li class="list-group-item">제목 : <span th:text="${board.title}"></span></li>
+    </ul>
+    <div class="panel-body">내용 : <span th:text="${board.content}"></span></div>
+
+    <div id="boardeditor" style="display: none">
+        <button th:onclick="'location.href =\''+@{/board/{boardidx}/edit (boardidx = ${board.idx})}+'\';'"  type="button" id ="editButton" class="btn btn-primary btn-sm">수정하기</button>
+        <form action="#" th:action="@{/board/delete/}+${board.idx}" method="post" style="display: inline" >
+            <button type="submit" onclick="if(!confirm('삭제 하시겠습니까?')){return false}" id ="deleteButton" class="btn btn-primary btn-sm">삭제하기</button>
+            <input type="hidden" name="_method" value="delete"/>
+        </form>
+
+    </div>
+</div>
+
+
+<br>
+
+<!--댓글-->
+
+<!--작성하기-->
+<form action="#" onsubmit="return check1()"  th:action="@{/board/}+${board.idx}+@{/comment}" method="post" th:object="${postcomment}">
+<div class="input-group input-group-lg" id = "commentwrite">
+    <span class="input-group-addon" id="sizing-addon1">댓글</span>
+    <textarea id="txt" type="text" class="form-control" th:field = "*{text}" placeholder="댓글을 작성해주세요" aria-describedby="sizing-addon1"></textarea>
+</div>
+    <input type="submit" class="btn btn-primary" id = "writeButton"value="댓글작성">
+</form>
+<br>
+
+<!--댓글-->
+
+<div th:each="comment : ${comment}" class="panel panel-default" id = commentPanel>
+    <div class="panel-heading">
+        <h3 class="panel-title">작성자 : <span th:text="${comment.user.username}"></span> </h3>
+    </div>
+    <div class="panel-body">
+        댓글 : <span th:id="${comment.id}+text" th:text="${comment.text}"></span>
+    </div>
+    <button th:if="${comment.user.username} == ${username}" th:id="${comment.id}+editComment" class="btn btn-primary" th:onclick=editPost([[${comment.id}]]) >수정</button>
+    <form th:if="${comment.user.username} == ${username}"  th:action="@{/board/}+${board.idx}+@{/comment/}+${comment.id}" method="post" th:onsubmit="return removecheck([[${comment.id}]])" style="display: inline">
+            <input type="submit" th:id="${comment.id}+removeComment" class="btn btn-primary" value="삭제" >
+            <input type="hidden" name="_method" value="delete"/>
+        </form>
+
+    <!--        댓글 수정-->
+    <form action="#" th:action="@{/board/}+${board.idx}+@{/comment/}+${comment.id}" th:onsubmit="return check2([[${comment.id}]])" method="post" th:object="${editcomment}" >
+        <div th:id="${comment.id}+editdiv" style="display:none;">
+            <input th:id="${comment.id}+editinput" type="text"  th:field = "*{text}" th:value="${comment.text}">
+        </div>
+        <div th:id="${comment.id}+submit" style="display:none;">
+            <input  type="submit" class="btn btn-primary" value="제출" >
+            <input type="button"  class="btn btn-primary" th:onclick="returnPost([[${comment.id}]])" value="취소">
+        </div>
+        <input type="hidden" name="_method" value="put"/>
+    </form>
+
+
+</div>
+
+
+</body>
+</html>
